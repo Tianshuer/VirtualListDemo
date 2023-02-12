@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    html, body {
+      margin: 0;
+    }
+    .viewport {
+      height: 300px;
+      background-color: pink;
+      overflow-y: scroll;
+      /* 解除默认定位 */
+      position: relative;
+    }
+    .scrollbar {
+      /* height: 3000px; */
+    }
+    .list {
+      position: absolute;
+      left: 50%;
+      top: 0;
+      /* transform: translateY(200px); */
+    }
+    .list-row {
+      height: 20px;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app">
+    <div class="viewport" ref="viewport"@scroll="onScroll">
+      <!-- 滚动条的存在基于子元素高过父元素，并且父元素设置 overflow-y:scroll -->
+      <div class="scrollbar" ref="scrollbar" :style="{transform: `translateY(${offset}px)`}">
+        <!-- 列表数据 -->
+        <div class="list">
+          <div class="list-row" v-for="(item, index) in showList">
+            {{ item }}
+          </div>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+  <script src="./vue.js"></script>
+  <script>
+    // 1. 用户可以看到的视口：假设一个元素高20，让看20个 = 400px
+    // 2. 用户滚动：需要滚动条 => 具体高度 ? => 实际数量 * 20高度
+    // 3. 随着用户的滚动：计算
+    //    3.1 开始的元素位置 + 结束元素位置
+    const len = 100000;
+    var vm =  new Vue({
+      el: '#app',
+      data() {
+        return {
+          offset: 0,
+          remian: 20,
+          height: 20,
+          start: 0,
+          end: 20,
+          list: new Array(len).fill(null).map((ele, index) => index + 1)
+        }
+      },
+      computed: {
+        showList() {
+          return this.list.slice(this.start, this.end)
+        }
+      },
+      mounted() {
+        this.$refs.viewport.style.height = (this.remian * this.height) + 'px'
+        this.$refs.scrollbar.style.height = (this.list.length * this.height) + 'px'
+      },
+      methods: {
+        onScroll() {
+          const scrollTop = this.$refs.viewport.scrollTop
+          // 计算起始的索引
+          this.start = Math.round(scrollTop / this.height )
+          // 计算结束的索引
+          this.end = this.start + this.remian
+          // 滚下去，划上来
+          this.offset = scrollTop;
+        }
+      }
+    })
+  </script>
+</body>
+
+</html>
